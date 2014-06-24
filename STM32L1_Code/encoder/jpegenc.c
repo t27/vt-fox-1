@@ -876,7 +876,7 @@ void encode_line_yuv(uint8_t *    _line_buffer,
                      unsigned int _line_number)
 {
     // number of blocks in row: 40 = 640 pixels / 16 pixels per block
-    unsigned int num_blocks = 40;
+    unsigned int num_blocks = IMG_WIDTH/16;
     
     unsigned int b;
     unsigned int r;
@@ -887,7 +887,7 @@ void encode_line_yuv(uint8_t *    _line_buffer,
         for (c=0; c<8; c++)
         {
             // get pixel index and extract YUV values
-            unsigned int n = 2*(640*r + 16*b + 2*c);
+            unsigned int n = 2*(IMG_WIDTH*r + 16*b + 2*c);
 
             // first four pairs of pixels get put into Y8x8[0],
             // and last four pairs get pu into Y8x8[1]

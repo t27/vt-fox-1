@@ -8,12 +8,18 @@
 #endif //RELEASE
 
 // enable VT watermark
-#define ENABLE_WATERMARK (1)
+#define ENABLE_WATERMARK (0)
+
+#define IMG_WIDTH   (320)   //
+#define IMG_HEIGHT  (240)   //
+#define NUM_LINES   (30)    // number of lines in image
 
 //---------------- J P E G ---------------
 
 // Application should provide this function for JPEG stream flushing
-extern void write_jpeg(uint8_t* buff, unsigned size);
+// extern void write_jpeg(uint8_t* buff, unsigned size);
+extern void write_jpeg(const unsigned char * _buffer,
+                const unsigned int    _n);
 extern uint32_t jpeg_addr_ptr(void);
 
 typedef struct huffman_s
