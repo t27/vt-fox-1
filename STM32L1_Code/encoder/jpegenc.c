@@ -445,7 +445,7 @@ static void write_DRIinfo(void)
 {
 	writeword(0xFFDD);  // write DRI (define restart interval) marker
     writeword(4);       // DRI Lr segment length (4 bytes total)
-	writeword(40);      // restart interval is 40 MCUs (each MCU is 16
+	writeword(IMG_WIDTH/16);      // restart interval is 40 MCUs (each MCU is 16
                         // pixels wide, which for an image 640 pixels
                         // wide is 640/16 = 40 MCUs
 }
@@ -728,7 +728,7 @@ void encode_line_rgb24(uint8_t *    _line_buffer,
                        unsigned int _line_number)
 {
     // number of blocks in row: 40 = 640 pixels / 16 pixels per block
-    unsigned int num_blocks = 40;
+    unsigned int num_blocks = IMG_WIDTH/16;
     
     unsigned int b;
     unsigned int r;
@@ -739,7 +739,7 @@ void encode_line_rgb24(uint8_t *    _line_buffer,
         for (c=0; c<16; c++)
         {
             // get pixel index and extract RGB values
-            unsigned int n = 3*(640*r + 16*b + c);
+            unsigned int n = 3*(IMG_WIDTH*r + 16*b + c);
             RGB8x16[r][c].Red   = _line_buffer[n+0];
             RGB8x16[r][c].Green = _line_buffer[n+1];
             RGB8x16[r][c].Blue  = _line_buffer[n+2];
@@ -798,7 +798,7 @@ void encode_line_rgb16(uint8_t *    _line_buffer,
                        unsigned int _line_number)
 {
     // number of blocks in row: 40 = 640 pixels / 16 pixels per block
-    unsigned int num_blocks = 40;
+    unsigned int num_blocks = IMG_WIDTH/16;
     
     unsigned int b;
     unsigned int r;
@@ -809,7 +809,7 @@ void encode_line_rgb16(uint8_t *    _line_buffer,
         for (c=0; c<16; c++)
         {
             // get pixel index and extract RGB values
-            unsigned int n = 2*(640*r + 16*b + c);
+            unsigned int n = 2*(IMG_WIDTH*r + 16*b + c);
 
             // read in two bytes from buffer
             uint8_t v0 = _line_buffer[n+0];
