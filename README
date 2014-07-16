@@ -1,18 +1,26 @@
-This is the code tree and supporting documents for Virginia Tech's camera
-experiment boards that will fly on AMSAT's FOX-1 satellite.
+This project is a jpeg encoder written in pure C.
+It takes a raw YUV Image(YUYV for color and 8bit Y for grayscale)
 
-The goals of this system are to fly a 640x480 camera and:
-1) Upon (UART) command, capture an image from the camera and convert to jpeg
-2) Upon command, relay the jpeg image data over UART to the IHU (internal
-housekeeping unit)
+This is a modification of the [jpegant](https://code.google.com/p/jpegant/) library and the [VT-fox project](https://github.com/mitchd/vt-fox-1)
 
+Both the above libraries are licensed under the GPLv3
 
-Folder descriptions:
+```
+		This program is free software: you can redistribute it and/or modify
+		it under the terms of the GNU General Public License as published by
+		the Free Software Foundation, either version 3 of the License, or
+		(at your option) any later version.
 
-IHU_Simulator/
+		This program is distributed in the hope that it will be useful,
+		but WITHOUT ANY WARRANTY; without even the implied warranty of
+		MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+		GNU General Public License for more details.
 
-- This contains x86 code to interface with a prototype Exp4 board.  It emulates the IHU per the specified ICD.  The simulator will also demonstrate how a jpeg image is re-assembled.
+		You should have received a copy of the GNU General Public License
+		along with this program.  If not, see <http://www.gnu.org/licenses/>.
+```
 
-STM32L1_Code/
+The major improvements are compatibility for **images of any resolution** and support for **grayscale jpeg encoding**.
+These features can be enabled or disabled before compiling the library.
 
-- The ARM Cortex-M3 code tree that runs on Exp4.  It contains ChibiOS/RT plus additional code to support the experiment
+This library has compiled succesfully for an x86 computer and for the STM32F4(with some minor modifications eg. removing file io) with the relevant compilers.
