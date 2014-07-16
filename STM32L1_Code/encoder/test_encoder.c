@@ -6,6 +6,7 @@
 #include "jpegenc.h"
 
 // constants specific to 640 x 480 image
+//Moved to jpegenc.h
 // #define IMG_WIDTH   (640)   //
 // #define IMG_HEIGHT  (480)   //
 // #define NUM_LINES   (60)    // number of lines in image
@@ -49,7 +50,12 @@ int main (int argc, char *argv[])
     switch (image_type) {
     case TYPE_RGB24:    line_size = 15360;  break;
     case TYPE_RGB16:    line_size = 10240;  break;
-    case TYPE_YUV:      line_size = IMG_WIDTH*2*8 /*10240*/;  break;
+    #ifndef GRAYSCALE
+    case TYPE_YUV:      line_size = IMG_WIDTH*2*8 /* 10240 for 640*480 */;  break;
+    #endif
+    #ifdef GRAYSCALE
+    case TYPE_YUV:      line_size = IMG_WIDTH*8;  break;
+    #endif
     case TYPE_UNKNOWN:
     default:
         fprintf(stderr, "error: %s, unknown file type for input '%s'\n", argv[0], argv[1]);

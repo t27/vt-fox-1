@@ -16,6 +16,7 @@ static const unsigned char qtable_0_lum[8][8] =
 	{36, 46, 48, 49, 56, 50, 52, 50}
 };
 
+#ifndef GRAYSCALE
 static const unsigned char qtable_0_chrom[8][8] =
 {
 	{ 9,  9, 12, 24, 50, 50, 50, 50},
@@ -27,6 +28,7 @@ static const unsigned char qtable_0_chrom[8][8] =
 	{50, 50, 50, 50, 50, 50, 50, 50},
 	{50, 50, 50, 50, 50, 50, 50, 50}
 };
+#endif
 
 // (1 << QTAB_SCALE)/qtable_0_lum[][]
 static const unsigned char qtable_lum[8][8] =
@@ -83,6 +85,7 @@ static const unsigned char std_dc_luminance_values[12] =
 	0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11
 };
 
+#ifndef GRAYSCALE
 static const unsigned char std_dc_chrominance_nrcodes[16] =
 {
 	0,3,1,1,1,1,1,1,1,1,1,0,0,0,0,0
@@ -91,6 +94,7 @@ static const unsigned char std_dc_chrominance_values[12] =
 {
 	0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11
 };
+#endif
 
 static const unsigned char std_ac_luminance_nrcodes[16] =
 {
@@ -122,6 +126,7 @@ static const unsigned char std_ac_luminance_values[162] =
 	0xf9, 0xfa
 };
 
+#ifndef GRAYSCALE
 static const unsigned char std_ac_chrominance_nrcodes[16] =
 {
 	0,2,1,2,4,4,3,4,7,5,4,4,0,1,2,0x77
@@ -151,6 +156,7 @@ static const unsigned char std_ac_chrominance_values[162] =
 	0xea, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, 0xf8,
 	0xf9, 0xfa
 };
+#endif
 
 static const unsigned char HYDClen[12] =
 {
@@ -354,33 +360,69 @@ static void write_APP0info(void)
 static void write_SOF0info(const int16_t height, const int16_t width)
 {
 	writeword(0xFFC0);	//marker
-	writeword(17);		//length
+
+	#ifndef GRAYSCALE 
+ 	writebyte(17);	//length 
+ 	#endif 
+ 	#ifdef GRAYSCALE 
+ 	writeword(0x0B);//length 
+    #endif
+
 	writebyte(8);		//precision
 	writeword(height);	//height
 	writeword(width);	//width
-	writebyte(3);		//nrofcomponents
+
+    #ifndef GRAYSCALE
+	writebyte(3);	//nrofcomponents
+    #endif
+    #ifdef GRAYSCALE 
+ 	writebyte(1);	//nrofcomponents 
+ 	#endif
+	
 	writebyte(1);		//IdY
+
+ 	#ifndef GRAYSCALE 
 	writebyte(0x21);	//HVY, 4:4:4 subsampling (0x22 for 4:2:0)
+    #endif
+	#ifdef GRAYSCALE 
+	writebyte(0x11);	//no subsampling  
+	#endif 
+
 	writebyte(0);		//QTY
+
+	#ifndef GRAYSCALE 
 	writebyte(2);		//IdCb
 	writebyte(0x11);	//HVCb
 	writebyte(1);		//QTCb
 	writebyte(3);		//IdCr
 	writebyte(0x11);	//HVCr
 	writebyte(1);		//QTCr
+	#endif
 }
 
 static void write_SOSinfo(void)
 {
 	writeword(0xFFDA);	//marker
+   
+    #ifndef GRAYSCALE
 	writeword(12);		//length
 	writebyte(3);		//nrofcomponents
+	#endif 
+ 	#ifdef GRAYSCALE 
+ 	writeword(0x08);	//length 
+ 	writebyte(1);		//nrofcomponents 
+ 	#endif
+
 	writebyte(1);		//IdY
 	writebyte(0);		//HTY
+
+	#ifndef GRAYSCALE
 	writebyte(2);		//IdCb
 	writebyte(0x11);	//HTCb
 	writebyte(3);		//IdCr
 	writebyte(0x11);	//HTCr
+	#endif
+
 	writebyte(0);		//Ss
 	writebyte(0x3F);	//Se
 	writebyte(0);		//Bf
@@ -391,16 +433,25 @@ static void write_DQTinfo(void)
 	unsigned i;
 	
 	writeword(0xFFDB);
-	writeword(132);
+	#ifndef GRAYSCALE 
+	writeword(132); /* segment length */ 
+	#endif 
+	#ifdef GRAYSCALE 
+	writeword(0x43); /* segment length */ 
+    #endif
+
 	writebyte(0);
 
 	for (i = 0; i < 64; i++) 
 		writebyte(((unsigned char*)qtable_0_lum)[zig[i]]); // zig-zag order
 
+#ifndef GRAYSCALE 
 	writebyte(1);
 
 	for (i = 0; i < 64; i++) 
 		writebyte(((unsigned char*)qtable_0_chrom)[zig[i]]); // zig-zag order
+#endif
+
 }
 
 static void write_DHTinfo(void)
@@ -408,8 +459,12 @@ static void write_DHTinfo(void)
 	unsigned i;
 	
 	writeword(0xFFC4); // marker
+    #ifndef GRAYSCALE 
 	writeword(0x01A2); // length
-
+    #endif 
+ 	#ifdef GRAYSCALE 
+ 	writeword(210); // length //0x1A2-162-16-1-12-16-1); 
+ 	#endif 
 	writebyte(0); // HTYDCinfo
 	for (i = 0; i < 16; i++) 
 		writebyte(std_dc_luminance_nrcodes[i]);
@@ -422,7 +477,7 @@ static void write_DHTinfo(void)
 	for (i = 0; i < 162; i++)
 		writebyte(std_ac_luminance_values[i]);
 	
-
+#ifndef GRAYSCALE 
 	writebyte(1); // HTCbDCinfo
 	for (i = 0; i < 16; i++)
 		writebyte(std_dc_chrominance_nrcodes[i]);
@@ -434,7 +489,9 @@ static void write_DHTinfo(void)
 		writebyte(std_ac_chrominance_nrcodes[i]);
 	for (i = 0; i < 162; i++)
 		writebyte(std_ac_chrominance_values[i]);
+#endif
 }
+
 
 
 //  write_DRIinfo()
@@ -445,9 +502,15 @@ static void write_DRIinfo(void)
 {
 	writeword(0xFFDD);  // write DRI (define restart interval) marker
     writeword(4);       // DRI Lr segment length (4 bytes total)
+	#ifndef GRAYSCALE
 	writeword(IMG_WIDTH/16);      // restart interval is 40 MCUs (each MCU is 16
                         // pixels wide, which for an image 640 pixels
                         // wide is 640/16 = 40 MCUs
+	#endif
+	#ifdef GRAYSCALE
+	writeword(IMG_WIDTH/8);
+	#endif
+
 }
 
 /******************************************************************************
@@ -871,6 +934,7 @@ void encode_line_rgb16(uint8_t *    _line_buffer,
 }
 #endif // ENABLE_RGB
 
+#ifndef GRAYSCALE
 // encode YUV line [size: 10,240 bytes]
 void encode_line_yuv(uint8_t *    _line_buffer,
                      unsigned int _line_number)
@@ -925,6 +989,48 @@ void encode_line_yuv(uint8_t *    _line_buffer,
     // write restart interval termination character
     write_RSI(_line_number % 8);
 }
+#endif
+#ifdef GRAYSCALE
+void encode_line_yuv(uint8_t *  _line_buffer,unsigned int _line_number)
+{
+    // number of blocks in row: 40 = 640 pixels / 16 pixels per block
+    unsigned int num_blocks = IMG_WIDTH/16;// 40;
+    
+    unsigned int b;
+    unsigned int r;
+    unsigned int c;
+    for (b=0; b<num_blocks; b++) {
+        // get 8x16 pixel YUV block
+        for (r=0; r<8; r++)
+        for (c=0; c<16; c++)
+        {
+            // get pixel index and extract YUV values
+            unsigned int n = (IMG_WIDTH*r + 16*b + 1*c);//r=rowno(640p per row),b=blockno(8 p per block),c=column no(1bytes per column),
+
+            // first four pairs of pixels get put into Y8x8[0],
+            // and last four pairs get put into Y8x8[1]
+            unsigned int yindex = c < 8 ? 0 : 1;
+            //Cb8x8[r][c] 				 = _line_buffer[n+0] - 128;
+            Y8x8[yindex][r][(c)%8+0]   = _line_buffer[n] - 128;
+            //Cr8x8[r][c] 				 = _line_buffer[n+2] - 128;
+            Y8x8[yindex][r][(c)%8+1]   = _line_buffer[n+1] - 128;
+        }
+
+        // 1 Y-compression
+        dct(Y8x8[0], Y8x8[0]);
+        huffman_encode(HUFFMAN_CTX_Y, (int16_t*)Y8x8[0]);
+
+        // 2 Y-compression
+        dct(Y8x8[1], Y8x8[1]);
+        huffman_encode(HUFFMAN_CTX_Y, (int16_t*)Y8x8[1]);
+
+    }
+
+    // write restart interval termination character
+    write_RSI(_line_number % 8);
+}
+
+#endif
 
 #if ENABLE_WATERMARK
 // write VT watermark in Y8x8 luminance array
